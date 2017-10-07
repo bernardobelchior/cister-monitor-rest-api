@@ -13,8 +13,8 @@ const connection = mysql.createConnection({
 connection.connect()
 
 app.get('/measurements/:numResults', function (req, res) {
-    var sql = 'SELECT * FROM Measurements ORDER BY timestamp DESC LIMIT ?'
-    var inserts = [req.params['numResults']]
+    var sql = 'SELECT * FROM measurement ORDER BY time_stamp DESC LIMIT ?'
+    var inserts = [Number(req.params['numResults'])]
     sql = mysql.format(sql, inserts)
 
     connection.query(sql, function (error, results, fields) {
