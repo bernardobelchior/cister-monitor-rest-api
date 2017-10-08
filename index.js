@@ -1,8 +1,11 @@
 const express = require('express')
+const bodyParser = require('body-parser')
 const mysql = require('mysql')
 const config = require('config.json')('config.json')
 
 const app = express()
+const jsonParser = bodyParser.json()
+
 const connection = mysql.createConnection({
     host: config.host,
     user: config.user,
@@ -20,9 +23,26 @@ app.get('/measurements/:numResults', function (req, res) {
     connection.query(sql, function (error, results, fields) {
         res.send({
             error,
-            results,
-            fields
+            results
         })
+    })
+})
+
+app.put('/addMeasurement', jsonParser, function (req, res) {
+    var base_statement = 'INSERT INTO measurement(mote_id, time_stamp, temperature, humidity) VALUES(?, ?, ?, ?)'
+    var measurement = req.body
+
+    var vars = [
+        Number(measurement.moteId),
+        new Date(Number(measurement.timestamp)),
+        measurement.temperature,
+        measurement.humidity
+    ]
+
+    var statement = mysql.format(base_statement, vars)
+
+    connection.query(statement, function (error, results, fields) {
+        res.send(error)
     })
 })
 
