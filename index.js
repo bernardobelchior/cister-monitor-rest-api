@@ -31,6 +31,42 @@ app.get('/measurements/:numResults', function (req, res) {
     })
 })
 
+app.get('/floor/:id', function (req, res) {
+    var sql = 'SELECT * FROM floor WHERE id = ?'
+	var inserts = [Number(req.params['id'])]
+	sql = mysql.format(sql, inserts)
+
+    connection.query(sql, function (error, results, fields) {
+        res.send({
+            error,
+            results
+        })
+    })
+})
+
+
+app.get('/floors', function (req, res) {
+    var sql = 'SELECT * FROM floor'
+
+    connection.query(sql, function (error, results, fields) {
+        res.send({
+            error,
+            results
+        })
+    })
+})
+
+app.get('/rooms', function (req, res) {
+    var sql = 'SELECT * FROM room'
+
+    connection.query(sql, function (error, results, fields) {
+        res.send({
+            error,
+            results
+        })
+    })
+})
+
 app.put('/addMeasurement', jsonParser, function (req, res) {
     var base_statement = 'INSERT INTO measurement(mote_id, time_stamp, temperature, humidity) VALUES(?, ?, ?, ?)'
     var measurement = req.body
