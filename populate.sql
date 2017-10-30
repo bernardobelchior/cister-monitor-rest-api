@@ -1,3 +1,5 @@
+USE monitor;
+
 INSERT INTO floor(floor_no, floor_geojson) VALUES(1, "floor1.json");
 INSERT INTO floor(floor_no, floor_geojson) VALUES(2, "floor2.json");
 INSERT INTO floor(floor_no, floor_geojson) VALUES(3, "floor3.json");
@@ -46,5 +48,7 @@ INSERT INTO room(name, floor_id) VALUES("S315", 3);
 INSERT INTO room(name, floor_id) VALUES("S316", 3);
 INSERT INTO room(name, floor_id) VALUES("S321 Data Centre", 3);
 
-INSERT INTO mote(mote_id, room_id) VALUES("IE0032G", 1);
-INSERT INTO mote(mote_id, room_id) VALUES("IE0033G", 1);
+INSERT INTO mote(node_id, mote_id, room_id) VALUES(1, "XM000031", 1);
+INSERT INTO mote(node_id, mote_id, room_id) VALUES(2, "XM00000F", 1);
+INSERT INTO mote(node_id, mote_id, room_id) VALUES(3, "XM00000D", 1);
+INSERT INTO mote(node_id, mote_id, room_id) VALUES(10, "XM000074", 1);
