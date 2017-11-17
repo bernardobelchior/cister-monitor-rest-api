@@ -1,112 +1,127 @@
-const express = require('express')
-const bodyParser = require('body-parser')
-const cors = require('cors')
-const mysql = require('mysql')
-const config = require('config.json')('config.json')
+import bodyParser from 'body-parser';
+import express from 'express';
+import cors from 'cors';
+import mysql from 'mysql';
 
-const app = express()
-const jsonParser = bodyParser.json()
+const config = require('config.json')('config.json');
 
-app.use(cors())
+const app = express();
+const jsonParser = bodyParser.json();
+
+app.use(cors());
 
 const dbConfig = {
-    host: config.host,
-    user: config.user,
-    password: config.password,
-    database: config.database
-}
+  host: config.host,
+  user: config.user,
+  password: config.password,
+  database: config.database,
+};
 
-let connection
+let connection;
 
 function handleDisconnect() {
-    connection = mysql.createConnection(dbConfig)
+  connection = mysql.createConnection(dbConfig);
 
-	connection.connect((error) => {
-		if(error) {
-			console.log('Error connecting to database.', error)
-			setTimeout(handleDisconnect, 2000)
-		}
-	})
+  connection.connect((error) => {
+    if (error) {
+      console.log('Error connecting to database.', error);
+      setTimeout(handleDisconnect, 2000);
+    }
+  });
 
-	connection.on('error', (error) => {
-		console.log('Error with database.', error)
-		if(error.code === 'PROTOCOL_CONNECTION_LOST') {
-			handleDisconnect()
-		} else {
-			throw error
-		}
-	})
+  connection.on('error', (error) => {
+    console.log('Error with database.', error);
+    if (error.code === 'PROTOCOL_CONNECTION_LOST') {
+      handleDisconnect();
+    } else {
+      throw error;
+    }
+  });
 }
 
-handleDisconnect()
+handleDisconnect();
 
-app.get('/measurements/:numResults', function (req, res) {
-    var sql = 'SELECT * FROM measurement, mote WHERE measurement.mote_id = mote.id ORDER BY time_stamp DESC LIMIT ?'
-    var inserts = [Number(req.params['numResults'])]
-    sql = mysql.format(sql, inserts)
+app.get('/measurements/:numResults', (req, res) => {
+  const sql = 'SELECT * FROM measurement, mote WHERE measurement.mote_id = mote.id ORDER BY time_stamp DESC LIMIT ?';
+  const inserts = [Number(req.params.numResults)];
+  const statement = mysql.format(sql, inserts);
 
-    connection.query(sql, function (error, results, fields) {
-        res.send({
-            error,
-            results
-        })
-    })
-})
+  connection.query(statement, (error, results) => res.send(error || results));
+});
 
-app.get('/floor/:id', function (req, res) {
-    var sql = 'SELECT * FROM floor WHERE id = ?'
-	var inserts = [Number(req.params['id'])]
-	sql = mysql.format(sql, inserts)
+app.get('/floor/:id', (req, res) => {
+  const sql = 'SELECT * FROM floor WHERE id = ?';
+  const inserts = [Number(req.params.id)];
+  const statement = mysql.format(sql, inserts);
 
-    connection.query(sql, function (error, results, fields) {
-        res.send({
-            error,
-            results
-        })
-    })
-})
+  connection.query(statement, (error, results) => res.send(error || results));
+});
+
+app.get('/floors', (req, res) => {
+  const statement = 'SELECT * FROM floor';
+
+  connection.query(statement, (error, results) => res.send(error || results));
+});
+
+app.get('/rooms', (req, res) => {
+  const statement = 'SELECT * FROM room';
+
+  connection.query(statement, (error, results) => res.send(error || results));
+});
+
+app.get('/room/:id', (req, res) => {
+  const id = Number(req.params.id);
+
+  /* if(isNaN(id))
+    res.send({
+      error:
+    }) */
 
 
-app.get('/floors', function (req, res) {
-    var sql = 'SELECT * FROM floor'
+  const baseStatement = 'SELECT * FROM room WHERE id = ?';
+  const vars = [id];
 
-    connection.query(sql, function (error, results, fields) {
-        res.send({
-            error,
-            results
-        })
-    })
-})
+  const statement = mysql.format(baseStatement, vars);
+  connection.query(statement, (error, results) => res.send(error || results));
+});
 
-app.get('/rooms', function (req, res) {
-    var sql = 'SELECT * FROM room'
+app.get('/statistics/room/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const days = 30;
 
-    connection.query(sql, function (error, results, fields) {
-        res.send({
-            error,
-            results
-        })
-    })
-})
+  const baseStatement = 'SELECT DATEDIFF(CURDATE(), DATE(time_stamp)) AS diff, DATE(time_stamp) AS date, AVG(temperature) AS temperature FROM measurement, mote WHERE measurement.mote_id = mote.id AND room_id = ? GROUP BY diff LIMIT ?';
+  const vars = [id, days];
 
-app.put('/addMeasurement', jsonParser, function (req, res) {
-//	let base_statement = 'SELECT node_id FROM mote WHERE node_id = ?'
-//	let statement = mysql.format(base_statement, vars) 
-    var base_statement = 'INSERT INTO measurement(mote_id, time_stamp, temperature, humidity) VALUES(?, ?, ?, ?)'
-    var measurement = req.body
+  const statement = mysql.format(baseStatement, vars);
+  connection.query(statement, (error, results) => {
+    if (error) {
+      res.send(error);
+    } else {
+      for (const result of results) {
+        if (Object.prototype.hasOwnProperty.call(result, 'diff')) {
+          delete result.diff;
+        }
+      }
 
-    var vars = [
-        Number(measurement.moteId),
-        new Date(Number(measurement.timestamp)),
-        measurement.temperature,
-        measurement.humidity
-    ]
+      res.send(results);
+    }
+  });
+});
 
-    var statement = mysql.format(base_statement, vars)
+app.put('/addMeasurement', jsonParser, (req, res) => {
+  const baseStatement = 'INSERT INTO measurement(mote_id, time_stamp, temperature, humidity) VALUES(?, ?, ?, ?)';
+  const measurement = req.body;
 
-    connection.query(statement, function (error, results, fields) {
-        res.send(error)
-    })
-})
+  const vars = [
+    Number(measurement.moteId),
+    new Date(Number(measurement.timestamp)),
+    measurement.temperature,
+    measurement.humidity,
+  ];
 
-app.listen(3000)
+  const statement = mysql.format(baseStatement, vars);
+
+  connection.query(statement, error => res.send(error || ''));
+});
+
+app.listen(3000);
