@@ -49,14 +49,6 @@ app.get('/measurements/:numResults', (req, res) => {
   connection.query(statement, (error, results) => res.send(error || results));
 });
 
-app.get('/floor/:id', (req, res) => {
-  const sql = 'SELECT * FROM floor WHERE id = ?';
-  const inserts = [Number(req.params.id)];
-  const statement = mysql.format(sql, inserts);
-
-  connection.query(statement, (error, results) => res.send(error || results));
-});
-
 app.get('/floors', (req, res) => {
   const statement = 'SELECT * FROM floor';
 
@@ -72,12 +64,6 @@ app.get('/rooms', (req, res) => {
 app.get('/room/:id', (req, res) => {
   const id = Number(req.params.id);
 
-  /* if(isNaN(id))
-    res.send({
-      error:
-    }) */
-
-
   const baseStatement = 'SELECT * FROM room WHERE id = ?';
   const vars = [id];
 
@@ -89,7 +75,7 @@ app.get('/statistics/room/:id', (req, res) => {
   const id = Number(req.params.id);
   const days = 30;
 
-  const timeStatement;
+  /* const timeStatement;
 
   switch (req.query.time) {
     case 'all':
@@ -101,25 +87,13 @@ app.get('/statistics/room/:id', (req, res) => {
     case 'day':
 
       break;
-  }
+  } */
 
-  const baseStatement = 'SELECT DATEDIFF(CURDATE(), DATE(time_stamp)) AS diff, DATE(time_stamp) AS date, AVG(temperature) AS temperature FROM measurement, mote WHERE measurement.mote_id = mote.id AND room_id = ? GROUP BY diff LIMIT ? ORDER BY diff DESC';
+  const baseStatement = 'SELECT date, temperature, humidity FROM (SELECT DATEDIFF(CURDATE(), DATE(time_stamp)) AS diff, DATE(time_stamp) AS date, AVG(temperature) AS temperature, AVG(humidity) AS humidity FROM measurement, mote WHERE measurement.mote_id = mote.id AND room_id = ? GROUP BY diff LIMIT ?) AS query ORDER BY date ASC';
   const vars = [id, days];
 
   const statement = mysql.format(baseStatement, vars);
-  connection.query(statement, (error, results) => {
-    if (error) {
-      res.send(error);
-    } else {
-      for (const result of results) {
-        if (Object.prototype.hasOwnProperty.call(result, 'diff')) {
-          delete result.diff;
-        }
-      }
-
-      res.send(results);
-    }
-  });
+  connection.query(statement, (error, results) => res.send(error || results));
 });
 
 app.put('/addMeasurement', jsonParser, (req, res) => {
