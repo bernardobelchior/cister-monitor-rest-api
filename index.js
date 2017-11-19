@@ -89,7 +89,21 @@ app.get('/statistics/room/:id', (req, res) => {
   const id = Number(req.params.id);
   const days = 30;
 
-  const baseStatement = 'SELECT DATEDIFF(CURDATE(), DATE(time_stamp)) AS diff, DATE(time_stamp) AS date, AVG(temperature) AS temperature FROM measurement, mote WHERE measurement.mote_id = mote.id AND room_id = ? GROUP BY diff LIMIT ?';
+  const timeStatement;
+
+  switch (req.query.time) {
+    case 'all':
+
+      break;
+    case 'month':
+
+      break;
+    case 'day':
+
+      break;
+  }
+
+  const baseStatement = 'SELECT DATEDIFF(CURDATE(), DATE(time_stamp)) AS diff, DATE(time_stamp) AS date, AVG(temperature) AS temperature FROM measurement, mote WHERE measurement.mote_id = mote.id AND room_id = ? GROUP BY diff LIMIT ? ORDER BY diff DESC';
   const vars = [id, days];
 
   const statement = mysql.format(baseStatement, vars);
