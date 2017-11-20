@@ -73,24 +73,32 @@ app.get('/room/:id', (req, res) => {
 
 app.get('/statistics/room/:id', (req, res) => {
   const id = Number(req.params.id);
-  const days = 30;
-
-  /* const timeStatement;
+  let timeStatement = '';
 
   switch (req.query.time) {
     case 'all':
-
+      break;
+    case 'year':
+      timeStatement = `WHERE diff <= ${(parseInt(req.query.num, 10) || 1) * 365}`;
       break;
     case 'month':
-
+      timeStatement = `WHERE diff <= ${(parseInt(req.query.num, 10) || 1) * 30}`;
       break;
     case 'day':
-
+      timeStatement = `WHERE diff <= ${parseInt(req.query.num, 10) || 1}`;
       break;
-  } */
+    default:
+      timeStatement = `WHERE diff <= ${30}`;
+      break;
+  }
 
-  const baseStatement = 'SELECT date, temperature, humidity FROM (SELECT DATEDIFF(CURDATE(), DATE(time_stamp)) AS diff, DATE(time_stamp) AS date, AVG(temperature) AS temperature, AVG(humidity) AS humidity FROM measurement, mote WHERE measurement.mote_id = mote.id AND room_id = ? GROUP BY diff LIMIT ?) AS query ORDER BY date ASC';
-  const vars = [id, days];
+  const baseStatement =
+    'SELECT date, temperature, humidity FROM ' +
+    '(SELECT DATEDIFF(CURDATE(), DATE(time_stamp)) AS diff, DATE(time_stamp) AS date, AVG(temperature) AS temperature, AVG(humidity) AS humidity ' +
+    'FROM measurement, mote WHERE measurement.mote_id = mote.id AND room_id = ? GROUP BY diff) AS query' +
+    ` ${timeStatement} ORDER BY date ASC`;
+
+  const vars = [id];
 
   const statement = mysql.format(baseStatement, vars);
   connection.query(statement, (error, results) => res.send(error || results));
