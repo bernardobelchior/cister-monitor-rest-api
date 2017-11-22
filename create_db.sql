@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS floor(
 CREATE TABLE IF NOT EXISTS room(
     id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
     floor_id INT NOT NULL,
+    short_name VARCHAR (16) NOT NULL,
     name VARCHAR (255) NOT NULL,
 
 	CONSTRAINT fk_floor_id FOREIGN KEY (floor_id) REFERENCES floor(id)
@@ -22,7 +23,7 @@ CREATE TABLE IF NOT EXISTS mote(
     mote_id VARCHAR(255) NOT NULL,
     x SMALLINT UNSIGNED,
     y SMALLINT UNSIGNED,
-    
+
     CONSTRAINT fk_room_id FOREIGN KEY (room_id) REFERENCES room(id)
 );
 

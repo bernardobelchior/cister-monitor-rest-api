@@ -41,6 +41,15 @@ function handleDisconnect() {
 
 handleDisconnect();
 
+app.get('/measurements/last', (req, res) => {
+  const baseStatement =
+    'SELECT * FROM (SELECT room.id AS id, time_stamp AS date, temperature, humidity, short_name AS shortName ' +
+    'FROM measurement, mote, room WHERE measurement.mote_id = mote.id AND room_id = room.id ORDER BY time_stamp DESC) AS query GROUP BY id';
+
+  const statement = mysql.format(baseStatement);
+  connection.query(statement, (error, results) => res.send(error || results));
+});
+
 app.get('/measurements/:numResults', (req, res) => {
   const sql = 'SELECT * FROM measurement, mote WHERE measurement.mote_id = mote.id ORDER BY time_stamp DESC LIMIT ?';
   const inserts = [Number(req.params.numResults)];
