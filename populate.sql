@@ -49,6 +49,7 @@ INSERT INTO room (name, short_name, floor_id) VALUES ("S316", "S316", 3);
 INSERT INTO room (name, short_name, floor_id) VALUES ("S321 Data Centre", 3);
 
 INSERT INTO mote (node_id, mote_id, room_id) VALUES (1, "XM000031", 1);
-INSERT INTO mote (node_id, mote_id, room_id) VALUES (2, "XM00000F", 1);
-INSERT INTO mote (node_id, mote_id, room_id) VALUES (3, "XM00000D", 1);
-INSERT INTO mote (node_id, mote_id, room_id) VALUES (10, "XM000074", 1);
+INSERT INTO mote (node_id, mote_id, room_id) VALUES (2, "FT0QXA43", 1);
+INSERT INTO mote (node_id, mote_id, room_id) VALUES (3, "FT0QX9WI", 1);
+INSERT INTO mote (node_id, mote_id, room_id) VALUES (4, "FT0QX9VE", 1);
+INSERT INTO mote (node_id, mote_id, room_id) VALUES (5, "FT0QXA56", 1);
